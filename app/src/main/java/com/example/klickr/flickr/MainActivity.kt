@@ -9,16 +9,24 @@ import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.SearchView
 import android.support.v7.widget.SearchView.OnQueryTextListener
+import android.text.TextUtils
+import android.util.Log
 import android.view.*
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
+import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import com.example.klickr.flickr.data.FlickrResponse
+import com.example.klickr.flickr.data.PhotoModel
 import com.example.klickr.flickr.data.RetrofitService
+import com.example.klickr.flickr.data.SnackBarListener
+import com.example.klickr.flickr.data.Utils
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
+import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.image_list_item.view.*
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
@@ -26,15 +34,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var fabClose: Animation? = null
     private var rotateForward: Animation? = null
     private var rotateBackward: Animation? = null
-    private var isFabOpen = false
+    private var isFabOpen = true
 
     private var searchView: SearchView? = null
     private var searchMenuItem: MenuItem? = null
 
-    private var imagesList = ArrayList<FlickrResponse>()
-
+    private var imagesList = ArrayList<PhotoModel>()
+    private var adapter: ImagesAdapter? = null
     private var disposable: Disposable? = null
-    //private var retrofitService  by lazy { RetrofitService.create() }
+    private val retrofitService by lazy { RetrofitService.create() }
+    private var isSearch = false
+    private var page = 1
+    private var searchText = "yes"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,15 +61,45 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         setFAB()
 
-/*
-        disposable = retrofitService.searchImages("", 1, 30)
-                .subscribe()
-*/
+        getData()
 
+        imagesRV?.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                getData()
+            }
+        })
 
         imagesRV?.layoutManager = GridLayoutManager(this, 2)
-        imagesRV?.adapter = ImagesAdapter()
+        adapter = ImagesAdapter()
+        imagesRV?.adapter = adapter
 
+    }
+
+    private fun getData() {
+        if (Utils.checkInternet(this))
+            disposable = retrofitService.searchImages(searchText, page, 30)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                            { response ->
+                                if (isSearch)
+                                    imagesList.clear()
+                                page++
+                                imagesList.addAll(response.photos?.photo!!)
+                                adapter?.notifyDataSetChanged()
+                            },
+                            { error ->
+                                Log.d("Error : ", error.message)
+
+                            })
+        else
+            Utils.showSnackBar(this, object : SnackBarListener {
+                override fun onRetryClickedFromSnackBar() {
+                    getData()
+                }
+
+            }, getString(R.string.snackBar_internet_connection), drawerLayout, true)
     }
 
     private fun setFAB() {
@@ -100,7 +141,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                                 .placeholder(R.mipmap.ic_launcher)
                                 .centerCrop()
                                 .error(R.mipmap.ic_launcher))
-                        .load(imagesList[position])
+                        .load(imagesList[position].constructURL())
                         .into(holder.view.imageView)
 
         }
@@ -127,11 +168,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         searchView = searchMenuItem?.actionView as SearchView
         searchView?.setOnQueryTextListener(object : OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
+                if (!TextUtils.isEmpty(query)) {
+                    isSearch = true
+                    searchText = query!!
+                    page = 1
+                    getData()
+                } else
+                    Toast.makeText(this@MainActivity, getString(R.string.search_field_empty_text), Toast.LENGTH_LONG).show()
+
                 return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                return true
+                return false
             }
 
         })

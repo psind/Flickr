@@ -17,6 +17,7 @@ import android.widget.EditText
 import android.widget.TextView
 import com.example.klickr.flickr.R
 import kotlinx.android.synthetic.main.dialog_layout.view.*
+import java.io.Serializable
 
 /**
  * @author on 20/07/18.
@@ -26,9 +27,9 @@ open class Utils {
     companion object {
 
         //Constants
-        val FLICKR_API_KEY = "069ff1bb2477ad95d58d50dc993c2890"
+        var FLICKR_API_KEY = "069ff1bb2477ad95d58d50dc993c2890"
 
-        val URL = "https://api.flickr.com/services/rest?method=flickr.photos.search&api_key=$FLICKR_API_KEY&format=json&nojsoncallback=1"
+        val URL = "https://api.flickr.com/services/"
 
 
         fun showSnackBar(context: Context?, snackBarListener: SnackBarListener?, message: String, coordinatorLayout: View,
@@ -167,5 +168,35 @@ interface DialogListener {
     fun onPositiveClickedFromDialog()
 }
 
-data class FlickrResponse(val constructedURL: String)
+data class FlickrResponse(val photos: PhotosModel?,
+                          val stat: String?)
 
+data class PhotosModel(val photo: ArrayList<PhotoModel>?,
+                       val pages: Int?)
+
+
+class PhotoModel : Serializable {
+    private var id: String? = ""
+    private var secret: String? = ""
+    private var server: String? = ""
+    private var farm: String? = ""
+    private var constructedURL: String? = ""
+
+    fun constructURL(): String {
+
+        if (TextUtils.isEmpty(constructedURL)) {
+
+            constructedURL = "https://farm" +
+                    farm +
+                    ".staticflickr.com/" +
+                    server +
+                    "/" +
+                    id +
+                    "_" +
+                    secret +
+                    ".jpg"
+        }
+
+        return constructedURL as String
+    }
+}

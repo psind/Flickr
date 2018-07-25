@@ -11,4 +11,5 @@
     <string name="retry">Retry</string>
     <string name="cancel">Cancel</string>
     <string name="search">Search</string>
+    <string name="search_field_empty_text">Please enter something in search field.</string>
 </resources>
