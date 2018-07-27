@@ -15,7 +15,7 @@ import retrofit2.http.Query
 interface RetrofitService {
 
     @GET("rest?method=flickr.photos.search&api_key=069ff1bb2477ad95d58d50dc993c2890&format=json&nojsoncallback=1")
-    fun searchImages(@Query("text") keyword: String, @Query("page") page: Int, @Query("per_page") count: Int): Observable<FlickrResponse>
+    fun searchImages(@Query("text") keyword: String, @Query("page") page: Int, @Query("per_page") count: Int): Observable<DataModel.FlickrResponse>
 
     companion object {
         fun create(): RetrofitService {

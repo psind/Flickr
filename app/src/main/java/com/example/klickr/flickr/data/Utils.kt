@@ -30,9 +30,10 @@ open class Utils {
         var FLICKR_API_KEY = "069ff1bb2477ad95d58d50dc993c2890"
 
         val URL = "https://api.flickr.com/services/"
+        val VIEW_TYPE_ITEM = 0
+        val VIEW_TYPE_LOADING = 1
 
-
-        fun showSnackBar(context: Context?, snackBarListener: SnackBarListener?, message: String, coordinatorLayout: View,
+        fun showSnackBar(context: Context?, snackBarListener: Interfaces.SnackBarListener?, message: String, coordinatorLayout: View,
                          showAction: Boolean) {
             if (context != null) {
                 try {
@@ -93,7 +94,7 @@ open class Utils {
 
         private var alertDialog: AlertDialog? = null
 
-        fun showDialog(context: Context?, dialogListener: DialogListener?,
+        fun showDialog(context: Context?, dialogListener: Interfaces.DialogListener?,
                        title: String, message: String, positiveButtonText: String,
                        negativeButtonText: String) {
             try {
@@ -157,46 +158,5 @@ open class Utils {
             }
 
         }
-    }
-}
-
-interface SnackBarListener {
-    fun onRetryClickedFromSnackBar()
-}
-
-interface DialogListener {
-    fun onPositiveClickedFromDialog()
-}
-
-data class FlickrResponse(val photos: PhotosModel?,
-                          val stat: String?)
-
-data class PhotosModel(val photo: ArrayList<PhotoModel>?,
-                       val pages: Int?)
-
-
-class PhotoModel : Serializable {
-    private var id: String? = ""
-    private var secret: String? = ""
-    private var server: String? = ""
-    private var farm: String? = ""
-    private var constructedURL: String? = ""
-
-    fun constructURL(): String {
-
-        if (TextUtils.isEmpty(constructedURL)) {
-
-            constructedURL = "https://farm" +
-                    farm +
-                    ".staticflickr.com/" +
-                    server +
-                    "/" +
-                    id +
-                    "_" +
-                    secret +
-                    ".jpg"
-        }
-
-        return constructedURL as String
     }
 }

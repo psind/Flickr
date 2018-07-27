@@ -10,15 +10,27 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/imagesRV"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:numColumns="auto_fit"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <ProgressBar
-        android:id="@+id/progressBar"
+        android:id="@+id/progressBarMain"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
         android:layout_centerHorizontal="true"
+        android:layout_marginTop="30dp"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/noImagesTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="30dp"
+        android:text="@string/no_images_available_please_try_again"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:textColor="@color/grey_a5"
         android:visibility="gone"/>
 
     <android.support.design.widget.FloatingActionButton
